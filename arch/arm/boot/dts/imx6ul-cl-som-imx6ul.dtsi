@@ -395,7 +395,7 @@
 
 		partition@c0000 {
 			label = "uboot environment";
-			reg = <0xc0000 0x40000>;
+			reg = <0xc0000 0x2000>;
 		};
 
 		partition@100000 {
