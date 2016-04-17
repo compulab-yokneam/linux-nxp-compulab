@@ -11,6 +11,6 @@
 #include "imx6ul-cl-som-imx6ul.dtsi"
 
 / {
-	model = "CompuLab i.MX6 UltraLite SoM";
+	model = "CompuLab CL-SOM-iMX6UL"; 
 	compatible = "fsl,imx6ul", "compulab,cl-som-imx6ul";
 };
