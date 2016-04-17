@@ -478,7 +478,7 @@
 		bus-width = <24>;
 
 		display-timings {
-			native-mode = <&timing0>;
+			native-mode = <&timing1>;
 			timing0: lcd {
 				clock-frequency = <29580000>;
 				hactive = <800>;
