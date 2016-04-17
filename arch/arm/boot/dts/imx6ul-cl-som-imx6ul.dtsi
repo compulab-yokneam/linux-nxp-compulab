@@ -383,7 +383,7 @@
 	m25px16@0 {
 		#address-cells = <1>;
 		#size-cells = <1>;
-		compatible = "st,m25px16", "st,m25p";
+		compatible = "st,m25p16", "st,m25p";
 		spi-max-frequency = <20000000>;
 		reg = <0>;
 
