@@ -203,6 +203,14 @@
 	};
 };
 
+&pcie {
+	pinctrl-names = "default";
+	depends = "/soc/aips-bus@30800000/i2c@30a50000/pca9555_sb@20";
+	reset-gpio = <&pca9555_sb 1 GPIO_ACTIVE_LOW>;
+	phy-ref-clk = <1>;
+	status = "okay";
+};
+
 &pwm2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pwm2>;
