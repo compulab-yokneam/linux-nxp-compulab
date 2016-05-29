@@ -14,17 +14,27 @@
 #include <asm/mach/arch.h>
 #include <asm/mach/map.h>
 
-static void __init cl_som_imx6ul_enet_clk_init(void)
+static inline void __init cl_som_imx6ul_enet_clk_init(struct regmap *gpr)
+{
+	regmap_update_bits(gpr, IOMUXC_GPR1, IMX6UL_GPR1_ENET_CLK_DIR, 1<<13);
+}
+
+static inline void __init cl_som_imx6ul_sai2_clk_init(struct regmap *gpr)
+{
+	regmap_update_bits(gpr, IOMUXC_GPR1, 1<<20, 1<<20);
+}
+
+static void __init cl_som_imx6ul_clk_init(void)
 {
 	struct regmap *gpr;
 
 	gpr = syscon_regmap_lookup_by_compatible("fsl,imx6ul-iomuxc-gpr");
-	if (!IS_ERR(gpr))
-		regmap_update_bits(gpr, IOMUXC_GPR1, IMX6UL_GPR1_ENET_CLK_DIR,
-				   1 << 13);
-	else
+	if (IS_ERR(gpr)) {
 		pr_err("failed to find fsl,imx6ul-iomux-gpr regmap\n");
-
+		return;
+	}
+	cl_som_imx6ul_enet_clk_init(gpr);
+	cl_som_imx6ul_sai2_clk_init(gpr);
 }
 
 static int __init cl_som_imx6ul_init(void)
@@ -38,7 +48,7 @@ static int __init cl_som_imx6ul_init(void)
 		return -ENODEV;
 	}
 
-	cl_som_imx6ul_enet_clk_init();
+	cl_som_imx6ul_clk_init();
 
 	return 0;
 }
