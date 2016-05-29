@@ -637,8 +637,8 @@ static ssize_t store_baud_rate(struct device *dev,
 {
 	struct kim_data_s *kim_data = dev_get_drvdata(dev);
 	pr_debug("storing baud rate >%s<", buf);
-	sscanf(buf, "%ld", &kim_data->baud_rate);
-	pr_debug("stored baud rate >%ld<", kim_data->baud_rate);
+	sscanf(buf, "%ud", &kim_data->baud_rate);
+	pr_debug("stored baud rate >%ud<", kim_data->baud_rate);
 	return count;
 }
 #endif	/* if DEBUG */
