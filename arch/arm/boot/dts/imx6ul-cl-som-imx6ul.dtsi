@@ -33,7 +33,9 @@
 	};
 
 	pu_dummy: pudummy_reg {
-		compatible = "fsl,imx6-dummy-pureg";
+		compatible = "regulator-fixed";
+		regulator-name = "pu-dummy";
+		regulator-always-on;
 	};
 
 	regulators {
@@ -90,6 +92,42 @@
 			linux,default-trigger = "heartbeat";
 		};
 	};
+
+	sound {
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "cl-som-imx6ul";
+		simple-audio-card,widgets =
+			"Headphone", "Headphone Jack",
+			"Line", "Line Out",
+			"Microphone", "Mic Jack",
+			"Line", "Line In";
+		simple-audio-card,routing =
+			"Headphone Jack", "RHPOUT",
+			"Headphone Jack", "LHPOUT",
+			"MICIN", "Mic Bias",
+			"Mic Bias", "Mic Jack";
+		simple-audio-card,format = "i2s";
+		simple-audio-card,bitclock-master = <&sound_master>;
+		simple-audio-card,frame-master = <&sound_master>;
+		simple-audio-card,bitclock-inversion;
+
+		sound_master: simple-audio-card,cpu {
+			sound-dai = <&sai2 0>;
+			system-clock-frequency = <12288000>;
+			system-clock-direction = "out";
+		};
+
+		simple-audio-card,codec {
+			sound-dai = <&wm8731>;
+			system-clock-direction = "in";
+		};
+
+	};
+};
+
+&clks {
+	assigned-clocks = <&clks IMX6UL_CLK_PLL4_AUDIO_DIV>;
+	assigned-clock-rates = <786432000>;
 };
 
 &iomuxc {
@@ -214,6 +252,16 @@
 			fsl,pins = <
 				MX6UL_PAD_UART1_TX_DATA__I2C3_SCL 0x4001b8b0
 				MX6UL_PAD_UART1_RX_DATA__I2C3_SDA 0x4001b8b0
+			>;
+		};
+
+		pinctrl_sai2: sai2grp {
+			fsl,pins = <
+				MX6UL_PAD_JTAG_TDI__SAI2_TX_BCLK	0x17088
+				MX6UL_PAD_JTAG_TDO__SAI2_TX_SYNC	0x17088
+				MX6UL_PAD_JTAG_TRST_B__SAI2_TX_DATA	0x11088
+				MX6UL_PAD_JTAG_TCK__SAI2_RX_DATA	0x11088
+				MX6UL_PAD_JTAG_TMS__SAI2_MCLK		0x17088
 			>;
 		};
 
@@ -425,6 +473,19 @@
 	pinctrl-0 = <&pinctrl_i2c3>;
 	status = "okay";
 
+	wm8731: wm8731@1a {
+		#sound-dai-cells = <0>;
+		compatible = "wlf,wm8731";
+		reg = <0x1a>;
+		status = "okay";
+		clocks = <&clks IMX6UL_CLK_SAI2>;
+		clock-names = "mclk";
+		AVDD-supply = <&pu_dummy>;
+		HPVDD-supply = <&pu_dummy>;
+		DCVDD-supply = <&pu_dummy>;
+		DBVDD-supply = <&pu_dummy>;
+	};
+
 	eeprom@50 {
 		compatible = "at24,24c02";
 		reg = <0x50>;
@@ -510,5 +571,18 @@
 &flexcan1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_flexcan1>;
+	status = "okay";
+};
+
+&sai2 {
+	#sound-dai-cells = <0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_sai2>;
+
+	assigned-clocks = <&clks IMX6UL_CLK_SAI2_SEL>,
+			  <&clks IMX6UL_CLK_SAI2>;
+	assigned-clock-parents = <&clks IMX6UL_CLK_PLL4_AUDIO_DIV>;
+	assigned-clock-rates = <0>, <12288000>;
+
 	status = "okay";
 };
