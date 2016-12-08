@@ -6886,6 +6886,9 @@ gckOS_QueryProfileTickRate(
     OUT gctUINT64_PTR TickRate
     )
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)
+    *TickRate = hrtimer_resolution;
+#else
     struct timespec res;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0)
@@ -6896,6 +6899,7 @@ gckOS_QueryProfileTickRate(
 #endif
 
     *TickRate = res.tv_nsec + res.tv_sec * 1000000000ULL;
+#endif
 
     return gcvSTATUS_OK;
 }
@@ -7382,7 +7386,11 @@ gckOS_WaitSignal(
 
     might_sleep();
 
+#ifdef CONFIG_PREEMPT_RT_BASE
+    raw_spin_lock_irq(&signal->obj.wait.lock);
+#else
     spin_lock_irq(&signal->obj.wait.lock);
+#endif
 
     if (signal->obj.done)
     {
@@ -7404,9 +7412,14 @@ gckOS_WaitSignal(
             ? MAX_SCHEDULE_TIMEOUT
             : Wait * HZ / 1000;
 
+#ifdef CONFIG_PREEMPT_RT_BASE
+        DEFINE_SWAITER(wait);
+        swait_prepare_locked(&signal->obj.wait, &wait);
+#else
         DECLARE_WAITQUEUE(wait, current);
         wait.flags |= WQ_FLAG_EXCLUSIVE;
         __add_wait_queue_tail(&signal->obj.wait, &wait);
+#endif
 
         while (gcvTRUE)
         {
@@ -7418,9 +7431,15 @@ gckOS_WaitSignal(
             }
 
             __set_current_state(TASK_INTERRUPTIBLE);
+#ifdef CONFIG_PREEMPT_RT_BASE
+            raw_spin_unlock_irq(&signal->obj.wait.lock);
+            timeout = schedule_timeout(timeout);
+            raw_spin_lock_irq(&signal->obj.wait.lock);
+#else
             spin_unlock_irq(&signal->obj.wait.lock);
             timeout = schedule_timeout(timeout);
             spin_lock_irq(&signal->obj.wait.lock);
+#endif
 
             if (signal->obj.done)
             {
@@ -7441,10 +7460,18 @@ gckOS_WaitSignal(
             }
         }
 
+#ifdef CONFIG_PREEMPT_RT_BASE
+        swait_finish_locked(&signal->obj.wait, &wait);
+#else
         __remove_wait_queue(&signal->obj.wait, &wait);
+#endif
     }
 
+#ifdef CONFIG_PREEMPT_RT_BASE
+    raw_spin_unlock_irq(&signal->obj.wait.lock);
+#else
     spin_unlock_irq(&signal->obj.wait.lock);
+#endif
 
 OnError:
     /* Return status. */
@@ -8556,6 +8583,16 @@ OnError:
     return status;
 }
 
+static void
+_NativeFenceSignaled(
+    struct sync_fence *fence,
+    struct sync_fence_waiter *waiter
+    )
+{
+    kfree(waiter);
+    sync_fence_put(fence);
+}
+
 gceSTATUS
 gckOS_WaitNativeFence(
     IN gckOS Os,
@@ -8566,7 +8603,7 @@ gckOS_WaitNativeFence(
 {
     struct sync_timeline * timeline;
     struct sync_fence * fence;
-    gctBOOL wait = gcvFALSE;
+    gctBOOL wait;
     gceSTATUS status = gcvSTATUS_OK;
 
     gcmkHEADER_ARG("Os=0x%X Timeline=0x%X FenceFD=%d Timeout=%u",
@@ -8582,6 +8619,17 @@ gckOS_WaitNativeFence(
     {
         gcmkONERROR(gcvSTATUS_INVALID_ARGUMENT);
     }
+
+    if (sync_fence_wait(fence, 0) == 0)
+    {
+        /* Already signaled. */
+        sync_fence_put(fence);
+
+        gcmkFOOTER_NO();
+        return gcvSTATUS_OK;
+    }
+
+    wait = gcvFALSE;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)
     {
@@ -8624,6 +8672,9 @@ gckOS_WaitNativeFence(
         long timeout = (Timeout == gcvINFINITE) ? - 1 : (long) Timeout;
         err = sync_fence_wait(fence, timeout);
 
+        /* Put the fence. */
+        sync_fence_put(fence);
+
         switch (err)
         {
         case 0:
@@ -8633,11 +8684,44 @@ gckOS_WaitNativeFence(
             break;
         default:
             gcmkONERROR(gcvSTATUS_GENERIC_IO);
+            break;
+        }
+    }
+    else
+    {
+        int err;
+        struct sync_fence_waiter *waiter;
+        waiter = (struct sync_fence_waiter *)kmalloc(
+                sizeof (struct sync_fence_waiter), gcdNOWARN | GFP_KERNEL);
+
+        if (!waiter)
+        {
+            sync_fence_put(fence);
+            gcmkONERROR(gcvSTATUS_OUT_OF_MEMORY);
+        }
+
+        /* Schedule a waiter callback. */
+        sync_fence_waiter_init(waiter, _NativeFenceSignaled);
+        err = sync_fence_wait_async(fence, waiter);
+
+        switch (err)
+        {
+        case 0:
+            /* Put fence in callback function. */
+            break;
+        case 1:
+            /* already signaled. */
+            sync_fence_put(fence);
+            break;
+        default:
+            sync_fence_put(fence);
+            gcmkONERROR(gcvSTATUS_GENERIC_IO);
+            break;
         }
     }
 
-    /* Put the fence. */
-    sync_fence_put(fence);
+    gcmkFOOTER_NO();
+    return gcvSTATUS_OK;
 
 OnError:
     gcmkFOOTER();
