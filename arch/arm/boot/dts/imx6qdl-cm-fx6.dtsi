@@ -73,8 +73,27 @@
 			gpio = <&gpio6 16 0>;
 			startup-delay-us = <10000>;
 		};
-#endif
+#else
+		/* regulator1 for wifi/bt */
+		wlan_pwren_dn: regulator@99 {
+			compatible = "regulator-fixed";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			regulator-name = "wlan_pwren_dn";
+			gpio = <&gpio3 1 0>;
+			enable-active-high;
+		};
 
+		wlreg_on: fixedregulator@100 {
+			compatible = "regulator-fixed";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			regulator-name = "wlreg_on";
+			gpio = <&gpio6 16 0>;
+			startup-delay-us = <100>;
+			enable-active-high;
+		};
+#endif
 		tsc2046reg: tsc2046-reg {
 			compatible = "regulator-fixed";
 			regulator-name = "tsc2046-reg";
@@ -83,6 +102,14 @@
 		};
 
 	};
+
+#ifdef __SOM_iMX6__
+	/* Murata -- define hook for BCMDHD driver.   */
+	bcmdhd_wlan_0: bcmdhd_wlan@0 {
+		compatible = "android,bcmdhd_wlan";
+		wlreg_on-supply = <&wlreg_on>;
+	};
+#endif
 
 	pu_dummy: pudummy_reg {
 		compatible = "fsl,imx6-dummy-pureg"; /* only used in ldo-bypass */
@@ -425,6 +452,7 @@
 			>;
 		};
 
+#ifndef __SOM_iMX6__
 		/* pins for wifi/bt */
 		pinctrl_mrvl1: mrvl1grp {
 			fsl,pins = <
@@ -434,6 +462,16 @@
 			>;
 		};
 
+#else
+		/* pins for wifi/bt */
+		pinctrl_murata: murata1grp {
+			fsl,pins = <
+				MX6QDL_PAD_NANDF_CS3__GPIO6_IO16 0x80000000 /* WL_REG_ON_3V3 */
+				MX6QDL_PAD_NANDF_CS1__GPIO6_IO14 0x80000000 /* WL_HOST_WAKE */
+				MX6QDL_PAD_EIM_DA1__GPIO3_IO01 0x80000000 /* WLAN_PWREN_PD */
+			>;
+		};
+#endif
 		/* pins for tsc2046 pendown */
 		pinctrl_tsc2046: tsc2046grp {
 			fsl,pins = <
@@ -716,6 +754,18 @@
 	non-removable;
 	vmmc-supply = <&awnh387_npoweron>;
 	vmmc_aux-supply = <&awnh387_wifi_nreset>;
+	status = "okay";
+};
+#else
+&usdhc1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc1 &pinctrl_murata>;
+	bus-width = <4>;
+	non-removable;
+	wifi-host;
+	cd-post;
+	pm-ignore-notify;
+	vmmc-supply = <&wlan_pwren_dn>;
 	status = "okay";
 };
 #endif
