@@ -108,7 +108,11 @@
 	pinctrl-0 = <&pinctrl_usdhc3>;
 	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
+#ifndef __SOM_iMX6__
 	no-1-8-v;
+#else
+	bus-width = <4>;
+#endif
 	keep-power-in-suspend;
 	vmmc-supply = <&reg_3p3v>;
 	status = "disabled";
