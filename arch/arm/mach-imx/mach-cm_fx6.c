@@ -107,6 +107,31 @@ static void __init cm_fx6_csi_mux_init(void)
 	}
 }
 
+static void __init imx6qp_init(void)
+{
+	struct regmap *gpr;
+	struct device_node *np;
+
+	np = of_find_compatible_node(NULL, NULL, "fsl,imx6qp");
+	if (!np) {
+		pr_info("not an imx6qp device\n");
+		return;
+	}
+
+	pr_info("Set GPRx values for cl-som-imx6 imx6qp device\n");
+	gpr = syscon_regmap_lookup_by_compatible("fsl,imx6q-iomuxc-gpr");
+	if (!IS_ERR(gpr)) {
+		pr_info("1) GPR4: enable AXI cache for VDOA/VPU/IPU\n");
+		regmap_update_bits(gpr, IOMUXC_GPR4, 0xFFFFFFFF, 0xF00000CF);
+		pr_info("2) GPR6/7: set IPU AXI-id1 Qos=0x1 AXI-id0/2/3 Qos=0x7\n");
+		regmap_update_bits(gpr, IOMUXC_GPR6, 0xFFFFFFFF, 0x77177717);
+		regmap_update_bits(gpr, IOMUXC_GPR7, 0xFFFFFFFF, 0x77177717);
+	} else {
+		pr_err("%s(): failed to find fsl,imx6q-iomux-gpr regmap\n",
+		       __func__);
+	}
+}
+
 #ifdef CONFIG_KGDB
 #define	KGDB_GPIO IMX_GPIO_NR(7,13) /* SW6 */
 
@@ -156,6 +181,7 @@ static int cm_fx6_init(void)
 	cm_fx6_csi_mux_init();
 
 	cm_fx6_kgdb_init();
+	imx6qp_init();
 
 	return 0;
 }
