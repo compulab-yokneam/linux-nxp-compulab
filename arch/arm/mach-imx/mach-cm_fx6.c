@@ -22,6 +22,9 @@
 #include "common.h"
 #include "hardware.h"
 #include <linux/string.h>
+#include <linux/irq.h>
+#include <linux/interrupt.h>
+#include <linux/gpio.h>
 
 
 extern unsigned int system_rev;
@@ -104,6 +107,40 @@ static void __init cm_fx6_csi_mux_init(void)
 	}
 }
 
+#ifdef CONFIG_KGDB
+#define	KGDB_GPIO IMX_GPIO_NR(7,13) /* SW6 */
+
+void kgdb_breakpoint(void);
+
+static irqreturn_t irq_handler(int irq, void *dev_id)
+{
+	static int count=0;
+
+	printk(KERN_DEBUG "interrupt received (irq[%d]: %d)\n", count++, irq);
+
+	kgdb_breakpoint();
+
+	return IRQ_HANDLED;
+}
+
+static void cm_fx6_kgdb_init(void)
+{
+	int ret;
+
+	ret = request_irq(gpio_to_irq(KGDB_GPIO),
+			irq_handler,
+			IRQF_TRIGGER_FALLING,
+			"irq_kgdb",
+			NULL);
+
+	if (ret)
+		printk(KERN_ERR
+			"cm-fx6: Failed to request irq for kgdb\n");
+
+}
+#else
+static void cm_fx6_kgdb_init(void){};
+#endif
 
 static int cm_fx6_init(void)
 {
@@ -117,6 +154,8 @@ static int cm_fx6_init(void)
 	_system_rev = system_rev;
 	revision_from_anatop();
 	cm_fx6_csi_mux_init();
+
+	cm_fx6_kgdb_init();
 
 	return 0;
 }
