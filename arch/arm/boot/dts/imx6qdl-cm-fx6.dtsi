@@ -15,7 +15,7 @@
 #define MX6QDL_GPR1	0x04 0x04 0x000 0x0 0x0
 
 / {
-	memory {
+	memory: memory {
 		reg = <0x10000000 0x20000000>;
 	};
 
