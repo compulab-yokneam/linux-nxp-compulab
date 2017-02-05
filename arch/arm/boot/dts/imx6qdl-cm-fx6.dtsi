@@ -53,6 +53,7 @@
 			enable-active-high;
 		};
 
+#ifndef __SOM_iMX6__
 		/* regulator1 for wifi/bt */
 		awnh387_npoweron: regulator-awnh387-npoweron {
 			compatible = "regulator-fixed";
@@ -72,6 +73,7 @@
 			gpio = <&gpio6 16 0>;
 			startup-delay-us = <10000>;
 		};
+#endif
 
 		tsc2046reg: tsc2046-reg {
 			compatible = "regulator-fixed";
@@ -698,6 +700,7 @@
 	status = "okay";
 };
 
+#ifndef __SOM_iMX6__
 /* wifi/bt */
 &usdhc1 {
 	pinctrl-names = "default";
@@ -707,6 +710,7 @@
 	vmmc_aux-supply = <&awnh387_wifi_nreset>;
 	status = "okay";
 };
+#endif
 
 &clks {
 	assigned-clocks = <&clks IMX6QDL_CLK_PLL4_AUDIO_DIV>;
