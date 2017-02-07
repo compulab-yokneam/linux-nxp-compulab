@@ -523,7 +523,11 @@
 		pinctrl_tsc2046: tsc2046grp {
 			fsl,pins = <
 				 /* tsc2046 PENDOWN */
+#ifdef __SOM_iMX6__
+				MX6QDL_PAD_EIM_A17__GPIO2_IO21 0x80000000
+#else
 				MX6QDL_PAD_SD4_DAT7__GPIO2_IO15 0x80000000
+#endif
 			>;
 		};
 
@@ -672,9 +676,15 @@
 		reg = <1>;	/* CS1 */
 		spi-max-frequency = <1500000>;
 
+#ifdef __SOM_iMX6__
+		interrupt-parent = <&gpio2>;
+		interrupts = <21 0>;
+		pendown-gpio = <&gpio2 21 0>;
+#else
 		interrupt-parent = <&gpio2>;
 		interrupts = <15 0>;
 		pendown-gpio = <&gpio2 15 0>;
+#endif
 
 		ti,x-min = /bits/ 16 <0x0>;
 		ti,x-max = /bits/ 16 <0x0fff>;
