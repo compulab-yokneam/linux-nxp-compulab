@@ -395,6 +395,7 @@ dtb-$(CONFIG_SOC_IMX7D) += \
 	imx7d-19x19-lpddr2-arm2.dtb \
 	imx7d-cl-som-imx7.dtb \
 	imx7d-sbc-imx7.dtb \
+	imx7d-sbc-imx7-lvds.dtb \
 	imx7d-sbc-iot-imx7.dtb \
 	imx7d-sdb.dtb \
 	imx7d-sdb-epdc.dtb \
