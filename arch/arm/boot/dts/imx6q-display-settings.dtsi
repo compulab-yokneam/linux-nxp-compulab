@@ -23,3 +23,16 @@
 #define LDB24 	disp_dev = "ldb";\
 		interface_pix_fmt = "RGB24";
 
+#define MODE_STR0 "640x480@60"
+#define MODE_STR1 "640x480@75"
+#define MODE_STR2 "800x600@60"
+#define MODE_STR3 "800x600@75"
+#define MODE_STR4 "1024x768@60"
+#define MODE_STR5 "1024x768@75"
+#define MODE_STR6 "1280x960@60"
+#define MODE_STR7 "1440x900@60"
+#define MODE_STR8 "1024x600@60"
+#define MODE_STR9 "1024x600@75"
+#define MODE_STR10 "1366x768@60"
+
+#define MODE_TFT MODE_STR3
