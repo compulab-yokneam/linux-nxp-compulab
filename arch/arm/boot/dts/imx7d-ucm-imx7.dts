@@ -183,6 +183,13 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_enet1>;
 	pinctrl-assert-gpios = <&gpio1 4 GPIO_ACTIVE_HIGH>;
+	clocks = <&clks IMX7D_ENET_AXI_ROOT_CLK>,
+		<&clks IMX7D_ENET_AXI_ROOT_CLK>,
+		<&clks IMX7D_ENET1_TIME_ROOT_CLK>,
+		<&clks IMX7D_PLL_ENET_MAIN_125M_CLK>,
+		<&clks IMX7D_ENET1_REF_ROOT_CLK>;
+	clock-names = "ipg", "ahb", "ptp",
+		"enet_clk_ref", "enet_out";
 	assigned-clocks = <&clks IMX7D_ENET1_TIME_ROOT_SRC>,
 			  <&clks IMX7D_ENET1_TIME_ROOT_CLK>;
 	assigned-clock-parents = <&clks IMX7D_PLL_ENET_MAIN_100M_CLK>;
