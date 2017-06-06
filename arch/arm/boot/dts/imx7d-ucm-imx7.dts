@@ -59,6 +59,23 @@
 			enable-active-high;
 			regulator-always-on;
 		};
+
+		wlreg_on: regulator@3 {
+			compatible = "regulator-fixed";
+			reg = <2>;
+			regulator-name = "wlreg_on";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			gpio = <&gpio2 25 GPIO_ACTIVE_HIGH>;
+			startup-delay-us = <100>;
+			enable-active-high;
+		};
+	};
+
+	/* Murata -- define hook for BCMDHD driver.   */
+	bcmdhd_wlan_0: bcmdhd_wlan@0 {
+		compatible = "android,bcmdhd_wlan";
+		wlreg_on-supply = <&wlreg_on>;
 	};
 
 	leds {
@@ -328,6 +345,17 @@
 			>;
 		};
 
+		pinctrl_usdhc2: usdhc2grp {
+			fsl,pins = <
+				MX7D_PAD_SD2_CMD__SD2_CMD			0x59
+				MX7D_PAD_SD2_CLK__SD2_CLK			0x19
+				MX7D_PAD_SD2_DATA0__SD2_DATA0			0x59
+				MX7D_PAD_SD2_DATA1__SD2_DATA1			0x59
+				MX7D_PAD_SD2_DATA2__SD2_DATA2			0x59
+				MX7D_PAD_SD2_DATA3__SD2_DATA3			0x59
+			>;
+		};
+
 		pinctrl_usdhc3: usdhc3grp {
 			fsl,pins = <
 				MX7D_PAD_SD3_CMD__SD3_CMD			0x59
@@ -341,6 +369,13 @@
 				MX7D_PAD_SD3_DATA6__SD3_DATA6			0x59
 				MX7D_PAD_SD3_DATA7__SD3_DATA7			0x59
 				MX7D_PAD_SD3_STROBE__SD3_STROBE			0x19
+			>;
+		};
+
+		pinctrl_wlan: wlangrp {
+			fsl,pins = <
+				MX7D_PAD_EPDC_GDCLK__GPIO2_IO24			0x34 /* WL_HOST_WAKE */
+				MX7D_PAD_EPDC_GDOE__GPIO2_IO25			0x14 /* WL_REG_ON */
 			>;
 		};
 	};
@@ -498,6 +533,8 @@
 
 	rtc@69 {
 		compatible = "abracon,ab1805";
+		abracon,sqw-enable;
+		abracon,sqw-freq-sel = /bits/ 8 <1>;
 		reg = <0x69>;
 		pagesize = <16>;
 	};
@@ -542,6 +579,17 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbh>;
 	vbus-supply = <&reg_usbh_nreset>;
+	status = "okay";
+};
+
+&usdhc2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc2 &pinctrl_wlan>;
+	bus-width = <4>;
+	non-removable;
+	wifi-host;
+	cd-post;
+	pm-ignore-notify;
 	status = "okay";
 };
 
