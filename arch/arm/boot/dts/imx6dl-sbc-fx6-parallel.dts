@@ -30,3 +30,11 @@
 &mipi_csi {
 	status = "disabled";
 };
+
+&uart5 {
+	status = "disabled";
+};
+
+&adv5150 {
+	status = "okey";
+};
