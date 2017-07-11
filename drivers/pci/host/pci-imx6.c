@@ -390,17 +390,7 @@ static int imx6_pcie_deassert_core_reset(struct pcie_port *pp)
 	/* allow the clocks to stabilize */
 	udelay(200);
 
-	/* Some boards don't have PCIe reset GPIO. */
-	if (gpio_is_valid(imx6_pcie->reset_gpio)) {
-		gpio_set_value_cansleep(imx6_pcie->reset_gpio, 0);
-		mdelay(20);
-		gpio_set_value_cansleep(imx6_pcie->reset_gpio, 1);
-		mdelay(20);
-	}
-
-	/*
-	 * Release the PCIe PHY reset here
-	 */
+	/* Release the i.MX7 PCIe PHY reset here */
 	if (is_imx7d_pcie(imx6_pcie)) {
 		/* wait for more than 10us to release phy g_rst and btnrst */
 		udelay(10);
@@ -410,7 +400,18 @@ static int imx6_pcie_deassert_core_reset(struct pcie_port *pp)
 
 		/* wait for phy pll lock firstly. */
 		pci_imx_phy_pll_locked(imx6_pcie);
-	} else if (is_imx6sx_pcie(imx6_pcie)) {
+	}
+
+	/* Some boards don't have PCIe reset GPIO. */
+	if (gpio_is_valid(imx6_pcie->reset_gpio)) {
+		gpio_set_value_cansleep(imx6_pcie->reset_gpio, 0);
+		mdelay(20);
+		gpio_set_value_cansleep(imx6_pcie->reset_gpio, 1);
+		mdelay(20);
+	}
+
+	/* Release the i.MX6 PCIe PHY reset here */
+	if (is_imx6sx_pcie(imx6_pcie)) {
 		regmap_update_bits(imx6_pcie->iomuxc_gpr, IOMUXC_GPR5,
 				IMX6SX_GPR5_PCIE_BTNRST, 0);
 	} else if (is_imx6qp_pcie(imx6_pcie)) {
