@@ -736,6 +736,10 @@
 	status = "okay";
 };
 
+&snvs_poweroff {
+	status = "okay";
+};
+
 #define SRC_PORT (1)
 #define EXT_PORT (3)
 &audmux {
