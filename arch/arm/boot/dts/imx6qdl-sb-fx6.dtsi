@@ -170,7 +170,7 @@
 
 		display-timings {
 			native-mode = <&timing0>;
-			timing0: hsd100pxn1 {
+			timing0: timing_lvds0 {
 				clock-frequency = <75400000>;
 				hactive = <1366>;
 				vactive = <768>;
@@ -192,7 +192,7 @@
 
 		display-timings {
 			native-mode = <&timing1>;
-			timing1: hsd100pxn1 {
+			timing1: timing_lvds1 {
 				clock-frequency = <85859000>;
 				hactive = <1368>;
 				vactive = <768>;
