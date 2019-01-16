@@ -60,6 +60,28 @@
 	status = "okay";
 };
 
+&uart2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart2>;
+	assigned-clocks = <&clks IMX7D_UART2_ROOT_SRC>;
+	assigned-clock-parents = <&clks IMX7D_OSC_24M_CLK>;
+	status = "okay";
+};
+
+&uart5 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart5>;
+	assigned-clocks = <&clks IMX7D_UART5_ROOT_SRC>;
+	assigned-clock-parents = <&clks IMX7D_PLL_SYS_MAIN_240M_CLK>;
+	status = "okay";
+};
+
+&i2c3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c3>;
+	status = "okay";
+};
+
 &i2c4 {
 	clock-frequency = <100000>;
 	pinctrl-names = "default";
@@ -82,6 +104,18 @@
 	dvicape@39 {
 		compatible = "sil164_simple";
 		reg = <0x39>;
+	};
+};
+
+&ecspi3 {
+	fsl,spi-num-chipselects = <2>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ecspi3 &pinctrl_ecspi3_cs>;
+	status = "okay";
+	spidev0: spi@0 {
+		reg = <0>;
+		compatible = "spidev";
+		spi-max-frequency = <20000000>;
 	};
 };
 
@@ -158,6 +192,24 @@
 };
 
 &iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpios>;
+
+	pinctrl_gpios: gpiosgrp {
+		fsl,pins = <
+			MX7D_PAD_LCD_DATA07__GPIO3_IO12		0x59 /* P4/08 BOOT_CFG7 */
+			MX7D_PAD_EPDC_PWR_COM__GPIO2_IO30	0x59 /* P4/10 */
+			MX7D_PAD_LCD_DATA10__GPIO3_IO15		0x59 /* P4/14 BOOT_CFG10 */
+			MX7D_PAD_LCD_DATA11__GPIO3_IO16		0x59 /* P4/16 BOOT_CFG11 */
+			MX7D_PAD_EPDC_BDR1__GPIO2_IO29		0x59 /* P4/20 */
+			MX7D_PAD_EPDC_PWR_STAT__GPIO2_IO31	0x59 /* P5/13 */
+			MX7D_PAD_LCD_DATA08__GPIO3_IO13		0x59 /* P5/08 BOOT_CFG8 */
+			MX7D_PAD_LCD_DATA09__GPIO3_IO14		0x59 /* P5/12 BOOT_CFG9 */
+			MX7D_PAD_EPDC_BDR0__GPIO2_IO28		0x59 /* P5/18 */
+			MX7D_PAD_SD1_RESET_B__GPIO5_IO2		0x59 /* P5/02 */
+		>;
+	};
+
 	pinctrl_flexcan1: flexcan1grp {
 		fsl,pins = <
 			MX7D_PAD_I2C1_SCL__FLEXCAN1_RX		0x59
@@ -172,10 +224,49 @@
 		>;
 	};
 
+	pinctrl_uart2: uart2grp {
+		fsl,pins = <
+			MX7D_PAD_LCD_ENABLE__UART2_DCE_TX	0x79 /* P4/33 */
+			MX7D_PAD_LCD_CLK__UART2_DCE_RX 		0x79 /* P4/31 */
+			MX7D_PAD_LCD_VSYNC__UART2_DCE_CTS	0x79 /* P4/03 */
+			MX7D_PAD_LCD_HSYNC__UART2_DCE_RTS	0x79 /* P4/01 */
+		>;
+	};
+
+	pinctrl_uart5: uart5grp {
+		fsl,pins = <
+			MX7D_PAD_I2C4_SDA__UART5_DCE_TX		0x79 /* P5/15 */
+			MX7D_PAD_I2C4_SCL__UART5_DCE_RX		0x79 /* P5/17 */
+			MX7D_PAD_I2C3_SDA__UART5_DTE_CTS 	0x79 /* P4/34 */
+			MX7D_PAD_I2C3_SCL__UART5_DTE_RTS	0x79 /* P4/32 */
+		>;
+	};
+
+	pinctrl_i2c3: i2c4grp {
+		fsl,pins = <
+			MX7D_PAD_GPIO1_IO09__I2C3_SDA           0x4000000f /* P4/23 */
+			MX7D_PAD_GPIO1_IO08__I2C3_SCL 		0x4000000f /* P4/21 */
+		>;
+	};
+
 	pinctrl_i2c4: i2c4grp {
 		fsl,pins = <
 			MX7D_PAD_GPIO1_IO11__I2C4_SDA		0x4000000f
 			MX7D_PAD_GPIO1_IO10__I2C4_SCL		0x4000000f
+		>;
+	};
+
+	pinctrl_ecspi3: ecspi3grp {
+		fsl,pins = <
+			MX7D_PAD_I2C1_SDA__ECSPI3_MOSI		0xf /* P4/04 */
+			MX7D_PAD_I2C1_SCL__ECSPI3_MISO		0xf /* P4/02 */
+			MX7D_PAD_I2C2_SCL__ECSPI3_SCLK		0xf /* P4/06 */
+		>;
+	};
+
+	pinctrl_ecspi3_cs: ecspi3_cs_grp {
+		fsl,pins = <
+			MX7D_PAD_I2C2_SDA__ECSPI3_SS0 		0x34 /* P4/18 */
 		>;
 	};
 
