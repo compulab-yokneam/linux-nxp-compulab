@@ -37,7 +37,7 @@
 		pagesize = <16>;
 	};
 
-	pca9555_sb: pca9555_sb@20 {
+	pca9555: pca9555@20 {
 		compatible = "nxp,pca9555";
 		gpio-controller;
 		#gpio-cells = <2>;
