@@ -169,6 +169,40 @@
 	status = "okay";
 };
 
+/* MIPI Panel */
+&mipi_dsi2 {
+	pwr-delay = <10>;
+	status = "okay";
+};
+
+&mipi_dsi_bridge2 {
+	status = "okay";
+
+	port@1 {
+		mipi_dsi_bridge2_out: endpoint {
+			remote-endpoint = <&panel0_in>;
+		};
+	};
+
+	panel@0 {
+		compatible = "startek,kd050hdfia020";
+		reg = <0>;
+		reset-gpio = <&pca9555 12 GPIO_ACTIVE_LOW>;
+		dsi-lanes = <4>;
+		status = "okay";
+
+		port {
+			panel0_in: endpoint {
+				remote-endpoint = <&mipi_dsi_bridge2_out>;
+			};
+		};
+	};
+};
+
+&mipi_dsi_phy2 {
+	status = "okay";
+};
+
 /* CAN bus */
 &flexcan1 {
 	pinctrl-names = "default";
@@ -183,7 +217,16 @@
 };
 
 &iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog_sb>;
+
 	sb-imx8x {
+		pinctrl_hog_sb: hoggrp {
+			fsl,pins = <
+				SC_P_MIPI_DSI1_GPIO0_00_MIPI_DSI1_GPIO0_IO00    0x00000021
+			>;
+		};
+
 		pinctrl_usdhc2_gpio: usdhc2gpiogrp {
 			fsl,pins = <
 				SC_P_USDHC1_RESET_B_LSIO_GPIO4_IO19	0x00000021
