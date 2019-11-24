@@ -421,3 +421,12 @@
 		};
 	};
 };
+
+&vpu {
+	status = "okay";
+};
+
+&vpu_decoder {
+	core_type = <1>;
+	status = "okay";
+};
