@@ -332,6 +332,8 @@ dtb-$(CONFIG_SOC_IMX6Q) += \
 	imx6q-wandboard.dtb \
 	imx6q-wandboard-revb1.dtb \
 	imx6dl-cm-fx6.dtb \
+	imx6q-sbc-imx6.dtb \
+	imx6qp-sbc-imx6.dtb \
 	imx6dl-sbc-fx6.dtb \
 	imx6dl-sbc-fx6m.dtb \
 	imx6q-cm-fx6.dtb \

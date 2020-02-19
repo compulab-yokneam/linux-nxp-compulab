@@ -44,6 +44,15 @@
 		};
 
 		/* regulator for usb hub1 */
+		reg_usb_h1_power: usb_h1_pwr {
+			compatible = "regulator-fixed";
+			regulator-name = "usb_h1_pwr";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			gpio = <&gpio1 0 0>;
+			enable-active-high;
+		};
+
 		reg_usb_h1_vbus: usb_h1_vbus {
 			compatible = "regulator-fixed";
 			regulator-name = "usb_h1_vbus";
@@ -51,6 +60,7 @@
 			regulator-max-microvolt = <5000000>;
 			gpio = <&gpio7 8 0>;
 			enable-active-high;
+			vin-supply = <&reg_usb_h1_power>;
 		};
 
 #ifndef __SOM_iMX6__
@@ -458,6 +468,7 @@
 		pinctrl_usbh1: usbh1grp {
 			fsl,pins = <
 				MX6QDL_PAD_SD3_RST__GPIO7_IO08 0x80000000
+				MX6QDL_PAD_GPIO_0__GPIO1_IO00 0x80000000
 			>;
 		};
 
